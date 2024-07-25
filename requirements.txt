@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+celery
+redis
+requests
+matplotlib
+plotly
