@@ -1,11 +1,11 @@
-```markdown
+
 # Weather Data Processing System
 
 ## Overview
 The Weather Data Processing System is a FastAPI application that fetches, stores, and processes weather data. It includes a scheduler for periodic data fetching, CRUD operations, and alert management based on weather conditions.
 
 ## Project Structure
-```
+```markdown
 weather/
 ├── app/
 │   ├── __init__.py
