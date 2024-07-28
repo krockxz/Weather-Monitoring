@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import plotly.express as px
+import time
 
 # Base URL of the FastAPI server
 BASE_URL = "http://127.0.0.1:8000"
@@ -22,9 +23,12 @@ if st.button("Fetch Weather"):
 # Section to display daily weather summary
 st.header("Daily Weather Summary")
 if st.button("Get Daily Summary"):
+    start_time = time.time()
     response = requests.get(f"{BASE_URL}/weather-summary/")
     if response.status_code == 200:
         summary = response.json()["daily_summary"]
+        elapsed_time = time.time() - start_time
+        st.write(f"Data fetched in {elapsed_time:.2f} seconds")
         if summary:
             df_summary = pd.DataFrame(summary)
             df_summary['date'] = pd.to_datetime(df_summary['date'])

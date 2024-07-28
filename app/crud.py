@@ -61,17 +61,17 @@ def create_tables():
     except Exception as e:
         logger.error(f"Error creating tables: {e}")
 
-
 def save_weather_data(weather_data):
     try:
         logger.info(f"Attempting to save weather data: {weather_data}")
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO weather (city, main, temp, feels_like, dt)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO weather (city, main, temp, feels_like, humidity, wind_speed, dt)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (weather_data['city'], weather_data['main'], round(weather_data['temp'], 2),
-                  round(weather_data['feels_like'], 2), weather_data['dt']))
+                  round(weather_data['feels_like'], 2), weather_data['humidity'], 
+                  weather_data.get('wind_speed', 0), weather_data['dt']))
             conn.commit()
             logger.info(f"Weather data saved for {weather_data['city']}: {weather_data}")
     except Exception as e:
@@ -83,7 +83,7 @@ def get_daily_summary():
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT city, date(dt, 'unixepoch') as date, AVG(temp) as avg_temp, MAX(temp) as max_temp, MIN(temp) as min_temp, main
+                SELECT city, date(dt, 'unixepoch') as date, AVG(temp) as avg_temp, MAX(temp) as max_temp, MIN(temp) as min_temp, AVG(humidity) as avg_humidity, AVG(wind_speed) as avg_wind_speed, main
                 FROM weather
                 GROUP BY city, date(dt, 'unixepoch'), main
             ''')
@@ -97,6 +97,8 @@ def get_daily_summary():
                     'avg_temp': round(row['avg_temp'], 2),
                     'max_temp': round(row['max_temp'], 2),
                     'min_temp': round(row['min_temp'], 2),
+                    'avg_humidity': round(row['avg_humidity'], 2),
+                    'avg_wind_speed': round(row['avg_wind_speed'], 2),
                     'dominant_condition': dominant_condition
                 })
             save_daily_summary(daily_summary)
@@ -113,10 +115,10 @@ def save_daily_summary(daily_summary):
             cursor = conn.cursor()
             for summary in daily_summary:
                 cursor.execute("""
-                    INSERT INTO daily_summary (city, date, avg_temp, max_temp, min_temp, dominant_condition)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO daily_summary (city, date, avg_temp, max_temp, min_temp, avg_humidity, avg_wind_speed, dominant_condition)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """, (summary['city'], summary['date'], summary['avg_temp'],
-                      summary['max_temp'], summary['min_temp'], summary['dominant_condition']))
+                      summary['max_temp'], summary['min_temp'], summary['avg_humidity'], summary['avg_wind_speed'], summary['dominant_condition']))
             conn.commit()
             logger.info(f"Daily summary saved")
     except Exception as e:

@@ -9,10 +9,9 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')  # Corrected format string
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-
 
 def fetch_weather_data(city: str):
     logger.info(f"Started fetching weather data for city: {city}")
@@ -27,9 +26,12 @@ def fetch_weather_data(city: str):
             'main': data['weather'][0]['main'],
             'temp': data['main']['temp'] - 273.15,
             'feels_like': data['main']['feels_like'] - 273.15,
+            'humidity': data['main']['humidity'],  # Ensure humidity is included
+            'wind_speed': data['wind']['speed'],  # Add wind speed
             'dt': data['dt']
         }
         logger.info(f"Weather data fetched for {city}: {weather_data}")
+        save_weather_data(weather_data)  # Save fetched data
         return weather_data
     except requests.exceptions.RequestException as e:
         logger.error(f"Error fetching weather data for {city}: {e}")
@@ -44,5 +46,3 @@ def start_scheduler():
     for city in cities:
         scheduler.add_job(fetch_weather_data, 'interval', minutes=5, args=[city])
     scheduler.start()
-    
-

@@ -68,9 +68,9 @@ weather/
    EMAIL_PASSWORD=your_email_password
    ```
 
-5. Initialize the database:
+5. Start UI:
    ```sh
-   python -m app.main
+   streamlit run streamlit_app.py
    ```
 
 6. Run the FastAPI server:
@@ -78,21 +78,15 @@ weather/
    uvicorn app.main:app --reload
    ```
    
-7. Run the tests:
+7. Run the tests after testing all the APIs:
    ```sh
-   python -m unittest app.test_weather
+   python -m unittest test.test_weather
    ```
 
 ## Usage
 
 ### API Endpoints
 
-- **GET /**: Welcome message
-   ```sh
-   curl -X 'GET' \
-     'http://127.0.0.1:8000/' \
-     -H 'accept: application/json'
-   ```
 - **GET /fetch-weather/{city}**: Fetch weather data for a specific city
    ```sh
    curl -X 'GET' \
@@ -105,6 +99,8 @@ weather/
      'http://127.0.0.1:8000/weather-summary/' \
      -H 'accept: application/json'
    ```
+   This saves the fetched weather summary from the earlier API and also updates and stores the weather summary in 5mins
+
 - **POST /set-threshold/**: Set alert thresholds
    - Parameters:
      - `city`: City name

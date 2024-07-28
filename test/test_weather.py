@@ -34,8 +34,9 @@ class TestWeatherSystem(unittest.TestCase):
     def test_data_retrieval(self, mock_get):
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "main": {"temp": 300.15, "feels_like": 298.15},
+            "main": {"temp": 300.15, "feels_like": 298.15, "humidity": 80},
             "weather": [{"main": "Clear"}],
+            "wind": {"speed": 3.5},
             "dt": 1625247600
         }
         mock_get.return_value = mock_response
@@ -44,6 +45,8 @@ class TestWeatherSystem(unittest.TestCase):
         self.assertEqual(data['temp'], 300.15 - 273.15)  # Adjusted to Celsius
         self.assertEqual(data['feels_like'], 298.15 - 273.15)  # Adjusted to Celsius
         self.assertEqual(data['main'], "Clear")
+        self.assertEqual(data['humidity'], 80)
+        self.assertEqual(data['wind_speed'], 3.5)
 
     def test_temperature_conversion(self):
         kelvin = 300.15
@@ -57,14 +60,14 @@ class TestWeatherSystem(unittest.TestCase):
         conn = crud.get_db_connection()
         with conn:
             conn.execute("DELETE FROM weather")
-            conn.execute("INSERT INTO weather (city, main, temp, feels_like, dt) VALUES (?, ?, ?, ?, ?)",
-                         ('TestCity1', 'Clear', 27.0, 25.0, 1625247600))
-            conn.execute("INSERT INTO weather (city, main, temp, feels_like, dt) VALUES (?, ?, ?, ?, ?)",
-                         ('TestCity2', 'Cloudy', 25.0, 24.0, 1625247600))
-            conn.execute("INSERT INTO weather (city, main, temp, feels_like, dt) VALUES (?, ?, ?, ?, ?)",
-                         ('TestCity3', 'Clear', 29.0, 28.0, 1625247600))
-            conn.execute("INSERT INTO weather (city, main, temp, feels_like, dt) VALUES (?, ?, ?, ?, ?)",
-                         ('TestCity4', 'Rain', 22.0, 21.0, 1625247600))
+            conn.execute("INSERT INTO weather (city, main, temp, feels_like, humidity, wind_speed, dt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                         ('TestCity1', 'Clear', 27.0, 25.0, 60, 3.0, 1625247600))
+            conn.execute("INSERT INTO weather (city, main, temp, feels_like, humidity, wind_speed, dt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                         ('TestCity2', 'Cloudy', 25.0, 24.0, 65, 2.5, 1625247600))
+            conn.execute("INSERT INTO weather (city, main, temp, feels_like, humidity, wind_speed, dt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                         ('TestCity3', 'Clear', 29.0, 28.0, 70, 4.0, 1625247600))
+            conn.execute("INSERT INTO weather (city, main, temp, feels_like, humidity, wind_speed, dt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                         ('TestCity4', 'Rain', 22.0, 21.0, 80, 5.0, 1625247600))
             conn.commit()
 
         summary = crud.get_daily_summary()
@@ -83,8 +86,8 @@ class TestWeatherSystem(unittest.TestCase):
         with conn:
             conn.execute("DELETE FROM weather")
             conn.execute("DELETE FROM alerts")
-            conn.execute("INSERT INTO weather (city, main, temp, feels_like, dt) VALUES (?, ?, ?, ?, ?)",
-                         ('TestCity', 'Rain', 305, 300, 1625247600))  # Ensure temp is above threshold
+            conn.execute("INSERT INTO weather (city, main, temp, feels_like, humidity, wind_speed, dt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                         ('TestCity', 'Rain', 305, 300, 80, 5.0, 1625247600))  # Ensure temp is above threshold
             conn.commit()
 
         crud.check_alert_thresholds(thresholds['temperature'], thresholds['condition'])
