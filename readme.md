@@ -64,8 +64,6 @@ weather/
 4. Create a `.env` file and add your environment variables:
    ```
    OPENWEATHER_API_KEY=975159ed0282f7db912074d9984a0e95
-   EMAIL_USER=your_email@gmail.com
-   EMAIL_PASSWORD=your_email_password
    ```
 
 5. Start UI:
