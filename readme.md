@@ -78,7 +78,8 @@ weather/
    uvicorn app.main:app --reload
    ```
    
-7. Run the tests after testing all the APIs:
+7. Run the tests after testing all the APIs
+   The test returns OK after all successful tests:
    ```sh
    python -m unittest test.test_weather
    ```
