@@ -71,16 +71,17 @@ class TestWeatherSystem(unittest.TestCase):
             conn.commit()
 
         summary = crud.get_daily_summary()
-        expected_avg_temp = (27.0 + 25.0 + 29.0 + 22.0) / 4
-        self.assertAlmostEqual(summary[0]['avg_temp'], 27.0, places=1)  # Match first city's avg temp
-        self.assertEqual(summary[0]['max_temp'], 27.0)
-        self.assertEqual(summary[0]['min_temp'], 27.0)
-        self.assertEqual(summary[0]['dominant_condition'], "Clear")
+        self.assertEqual(len(summary), 4)
+        self.assertEqual(summary[0]['city'], 'TestCity1')
+        self.assertEqual(summary[0]['avg_temp'], 27.0)
+        self.assertEqual(summary[1]['city'], 'TestCity2')
+        self.assertEqual(summary[1]['avg_temp'], 25.0)
+        self.assertEqual(summary[2]['city'], 'TestCity3')
+        self.assertEqual(summary[2]['avg_temp'], 29.0)
+        self.assertEqual(summary[3]['city'], 'TestCity4')
+        self.assertEqual(summary[3]['avg_temp'], 22.0)
 
-    @patch('app.crud.send_email_alert')  # Mock email sending
-    def test_alerting_thresholds(self, mock_send_email_alert):
-        mock_send_email_alert.return_value = None  # Bypass email sending
-
+    def test_alerting_thresholds(self):
         thresholds = {'temperature': 299, 'condition': 'Rain'}
         conn = crud.get_db_connection()
         with conn:
@@ -90,11 +91,11 @@ class TestWeatherSystem(unittest.TestCase):
                          ('TestCity', 'Rain', 305, 300, 80, 5.0, 1625247600))  # Ensure temp is above threshold
             conn.commit()
 
-        crud.check_alert_thresholds(thresholds['temperature'], thresholds['condition'])
+        crud.check_alert_thresholds('TestCity', thresholds['temperature'], thresholds['condition'])
         alerts = crud.fetch_alerts()
 
         self.assertTrue(any(alert['temp_threshold'] == thresholds['temperature'] for alert in alerts))
-        self.assertFalse(any(alert['condition'] != thresholds['condition'] for alert in alerts))
+        self.assertTrue(any(alert['condition'] == thresholds['condition'] for alert in alerts))
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from .scheduler import start_scheduler, fetch_weather_data
-from .crud import create_tables, get_daily_summary, check_alert_thresholds, save_weather_data, fetch_alerts
+from .crud import create_tables, get_daily_summary, check_alert_thresholds, save_weather_data, fetch_alerts, clear_all_alerts
 import logging
 import time
 
@@ -44,7 +44,7 @@ def weather_summary():
 @app.post("/set-threshold/")
 def set_threshold(city: str, condition: str, temp_threshold: float):
     logger.info(f"Setting alert threshold for {city}: {condition} at {temp_threshold}°C")
-    check_alert_thresholds(temp_threshold, condition)
+    check_alert_thresholds(city, temp_threshold, condition)
     return {"status": "Threshold set and checked"}
 
 @app.get("/alerts/")
@@ -52,6 +52,18 @@ def get_alerts():
     logger.info("Fetching alerts")
     alerts = fetch_alerts()
     return {"alerts": alerts}
+
+@app.delete("/clear-alerts/")
+def clear_alerts():
+    try:
+        logger.info("Clearing all alerts")
+        success = clear_all_alerts()
+        if not success:
+            raise HTTPException(status_code=500, detail="Error clearing alerts")
+        return {"status": "success", "message": "All alerts cleared"}
+    except Exception as e:
+        logger.error(f"Error clearing alerts: {e}")
+        raise HTTPException(status_code=500, detail="Error clearing alerts")
 
 if __name__ == "__main__":
     import uvicorn

@@ -16,7 +16,13 @@ if st.button("Fetch Weather"):
     response = requests.get(f"{BASE_URL}/fetch-weather/{city}")
     if response.status_code == 200:
         weather_data = response.json()
-        st.write(weather_data)
+        st.subheader(f"Weather Data for {city}")
+        st.write(f"**Condition:** {weather_data['main']}")
+        st.write(f"**Temperature:** {weather_data['temp']:.2f}°C")
+        st.write(f"**Feels Like:** {weather_data['feels_like']:.2f}°C")
+        st.write(f"**Humidity:** {weather_data['humidity']}%")
+        st.write(f"**Wind Speed:** {weather_data['wind_speed']} m/s")
+        st.write(f"**Timestamp:** {time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(weather_data['dt']))}")
     else:
         st.error("Error fetching weather data")
 
@@ -33,7 +39,8 @@ if st.button("Get Daily Summary"):
             df_summary = pd.DataFrame(summary)
             df_summary['date'] = pd.to_datetime(df_summary['date'])
 
-            st.write(df_summary)
+            st.subheader("Daily Summary Data")
+            st.dataframe(df_summary)
 
             # Visualization for daily summaries
             fig_avg_temp = px.line(df_summary, x="date", y="avg_temp", color="city", title="Average Temperature per City",
@@ -50,7 +57,7 @@ if st.button("Get Daily Summary"):
                                    line_shape='linear', markers=True)
             fig_min_temp.update_xaxes(dtick="D1", tickformat="%Y-%m-%d %H:%M")
             st.plotly_chart(fig_min_temp)
-            
+
             fig_condition = px.histogram(df_summary, x="dominant_condition", color="city", title="Dominant Weather Condition per City")
             st.plotly_chart(fig_condition)
         else:
@@ -76,19 +83,32 @@ if st.button("Set Threshold"):
 
 # Automatically fetch and display alerts
 st.header("Alerts")
-response = requests.get(f"{BASE_URL}/alerts/")
-if response.status_code == 200:
-    alerts = response.json()["alerts"]
-    if alerts:
-        df_alerts = pd.DataFrame(alerts)
-        df_alerts['alert_time'] = pd.to_datetime(df_alerts['alert_time'], unit='s')  # Convert from Unix timestamp
 
-        st.write(df_alerts)
-
-        # Visualization for alerts
-        fig_alerts = px.scatter(df_alerts, x="alert_time", y="temp_threshold", color="city", title="Temperature Alerts")
-        st.plotly_chart(fig_alerts)
+if st.button("Clear Alerts"):
+    response = requests.delete(f"{BASE_URL}/clear-alerts/")
+    if response.status_code == 200:
+        st.success("All alerts cleared!")
     else:
-        st.warning("No alerts found")
-else:
-    st.error("Error retrieving alerts")
+        st.error("Error clearing alerts")
+
+# Function to fetch and display alerts
+def fetch_alerts():
+    response = requests.get(f"{BASE_URL}/alerts/")
+    if response.status_code == 200:
+        alerts = response.json()["alerts"]
+        if alerts:
+            df_alerts = pd.DataFrame(alerts)
+            df_alerts['alert_time'] = pd.to_datetime(df_alerts['alert_time'], unit='s')  # Convert from Unix timestamp
+
+            st.subheader("Alert Data")
+            st.dataframe(df_alerts)
+
+            # Visualization for alerts
+            fig_alerts = px.scatter(df_alerts, x="alert_time", y="temp_threshold", color="city", title="Temperature Alerts")
+            st.plotly_chart(fig_alerts)
+        else:
+            st.warning("No alerts found")
+    else:
+        st.error("Error retrieving alerts")
+
+fetch_alerts()

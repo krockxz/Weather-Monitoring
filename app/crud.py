@@ -1,9 +1,6 @@
 import sqlite3
 import logging
 from datetime import datetime
-import smtplib
-from email.mime.text import MIMEText
-from .config import settings  # Ensure settings are imported
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -124,44 +121,35 @@ def save_daily_summary(daily_summary):
     except Exception as e:
         logger.error(f"Error saving daily summary: {e}")
 
-def send_email_alert(city, condition, temp_threshold, alert_time):
+def check_alert_thresholds(city, temp_threshold, condition):
     try:
-        alert_datetime = datetime.utcfromtimestamp(alert_time).strftime('%Y-%m-%d %H:%M:%S')
-        msg = MIMEText(f"Alert! The temperature in {city} exceeded {temp_threshold}°C with condition {condition} at {alert_datetime}")
-        msg['Subject'] = f"Weather Alert for {city}"
-        msg['From'] = settings.email_user
-        msg['To'] = "recipient_email@example.com"  # Add the recipient's email address
-
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(settings.email_user, settings.email_password)
-            server.send_message(msg)
-        logger.info(f"Alert email sent for {city}")
-    except Exception as e:
-        logger.error(f"Error sending email alert: {e}")
-
-def check_alert_thresholds(temp_threshold, condition):
-    try:
-        logger.info("Checking alert thresholds")
+        logger.info(f"Checking alert thresholds for city: {city} with condition: {condition} and threshold: {temp_threshold}")
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 SELECT city, temp, dt
                 FROM weather
-                WHERE temp > ? AND main = ?
-            ''', (temp_threshold, condition))
+                WHERE temp > ? AND main = ? AND city = ?
+            ''', (temp_threshold, condition, city))
             alerts = cursor.fetchall()
             for alert in alerts:
                 alert_time = int(alert['dt'])
+                # Check if alert already exists
                 cursor.execute("""
-                    INSERT INTO alerts (city, condition, temp_threshold, alert_time)
-                    VALUES (?, ?, ?, ?)
-                """, (alert['city'], condition, temp_threshold, alert_time))
-                send_email_alert(alert['city'], condition, temp_threshold, alert_time)
+                    SELECT * FROM alerts
+                    WHERE city = ? AND condition = ? AND temp_threshold = ? AND alert_time = ?
+                """, (city, condition, temp_threshold, alert_time))
+                existing_alert = cursor.fetchone()
+                if not existing_alert:
+                    cursor.execute("""
+                        INSERT INTO alerts (city, condition, temp_threshold, alert_time)
+                        VALUES (?, ?, ?, ?)
+                    """, (city, condition, temp_threshold, alert_time))
             conn.commit()
-            logger.info(f"Alerts checked and saved if any")
+            logger.info(f"Alerts checked and saved for city: {city} if any")
     except Exception as e:
         logger.error(f"Error checking alert thresholds: {e}")
+
 
 def fetch_alerts():
     try:
@@ -175,3 +163,17 @@ def fetch_alerts():
     except Exception as e:
         logger.error(f"Error fetching alerts: {e}")
         return []
+    
+def clear_all_alerts():
+    try:
+        logger.info("Clearing all alerts")
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM alerts')
+            conn.commit()
+            logger.info("All alerts cleared")
+    except Exception as e:
+        logger.error(f"Error clearing alerts: {e}")
+        return False
+    return True
+

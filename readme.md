@@ -76,11 +76,36 @@ weather/
    uvicorn app.main:app --reload
    ```
    
-7. Run the tests after testing all the APIs
-   The test returns OK after all successful tests:
-   ```sh
-   python -m unittest test.test_weather
-   ```
+7. ### Updating the README with Test Information
+
+You can add a section to your README file to provide information about the tests included in your project. Here is a suggested brief description:
+
+---
+
+## Tests
+
+### Overview
+
+This project includes a suite of unit tests to ensure the reliability and correctness of the weather data processing system. The tests cover various functionalities such as fetching weather data, data retrieval, temperature conversion, daily weather summaries, and alerting thresholds.
+
+### Test Details
+
+- **System Setup and Data Retrieval**: Tests the system setup by mocking API requests to the OpenWeatherMap API and verifying that data is correctly fetched and processed.
+- **Temperature Conversion**: Ensures that temperature values are correctly converted from Kelvin to Celsius and Fahrenheit.
+- **Daily Weather Summary**: Verifies the aggregation of daily weather data and ensures the correct calculation of average, max, and min temperatures along with humidity and wind speed.
+- **Alerting Thresholds**: Checks the alert generation mechanism by setting temperature and condition thresholds and ensuring alerts are created when conditions are met.
+
+### Running Tests
+
+To run the tests, use the following command:
+
+```bash
+python -m unittest discover test
+```
+
+This command will discover and execute all test cases defined in the `test` directory.
+
+---
 
 ## Usage
 
