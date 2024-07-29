@@ -1,11 +1,10 @@
-
 # Weather Data Processing System
 
 ## Overview
 The Weather Data Processing System is a FastAPI application that fetches, stores, and processes weather data. It includes a scheduler for periodic data fetching, CRUD operations, and alert management based on weather conditions.
 
 ## Project Structure
-```markdown
+```
 weather/
 ├── app/
 │   ├── __init__.py
@@ -75,12 +74,6 @@ weather/
    ```sh
    uvicorn app.main:app --reload
    ```
-   
-7. ### Updating the README with Test Information
-
-You can add a section to your README file to provide information about the tests included in your project. Here is a suggested brief description:
-
----
 
 ## Tests
 
@@ -105,8 +98,6 @@ python -m unittest discover test
 
 This command will discover and execute all test cases defined in the `test` directory.
 
----
-
 ## Usage
 
 ### API Endpoints
@@ -117,13 +108,14 @@ This command will discover and execute all test cases defined in the `test` dire
      'http://127.0.0.1:8000/fetch-weather/Delhi' \
      -H 'accept: application/json'
    ```
+
 - **GET /weather-summary/**: Get the daily weather summary
    ```sh
    curl -X 'GET' \
      'http://127.0.0.1:8000/weather-summary/' \
      -H 'accept: application/json'
    ```
-   This saves the fetched weather summary from the earlier API and also updates and stores the weather summary in 5mins
+   This saves the fetched weather summary from the earlier API and also updates and stores the weather summary in 5 minutes.
 
 - **POST /set-threshold/**: Set alert thresholds
    - Parameters:
@@ -140,12 +132,14 @@ This command will discover and execute all test cases defined in the `test` dire
        "temp_threshold": 35.0
      }'
    ```
+
 - **GET /alerts/**: Retrieve weather alerts
    ```sh
    curl -X 'GET' \
      'http://127.0.0.1:8000/alerts/' \
      -H 'accept: application/json'
    ```
+
 ### Data Flow Diagram Description
 
 #### Context Level (Level 0)
@@ -253,3 +247,5 @@ You can visualize the above description using a tool like Draw.io. Here’s a st
    - Break down the central process into sub-processes: Fetch Weather Data, Store Weather Data, Generate Daily Summary, Set Alert Thresholds, Check Alert Thresholds, Retrieve Summaries and Alerts.
    - Connect each sub-process with appropriate data stores and external entities.
    - Ensure data flows are clearly labeled between processes, data stores, and external entities.
+
+---
